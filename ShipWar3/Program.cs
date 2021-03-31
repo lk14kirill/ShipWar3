@@ -2,6 +2,14 @@
 
 namespace ShipWar3
 {
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            var gameCycle = new GameCycle();
+            gameCycle.StartGame();
+        }
+    }
     public enum ShipState
     {
         alive,
@@ -78,9 +86,13 @@ namespace ShipWar3
             }
         }
     }
-    public class Draw
+    public class Draw            //Method is doing drawing of this game
     {
         public char symbol;
+        public void MakeIndent()
+        {
+            Console.WriteLine();
+        }
         private int[][] TransformShipCoordInInts(Ship[] shipsArray)
         {
             int[][] intArray = new int[shipsArray.Length][];
@@ -141,10 +153,6 @@ namespace ShipWar3
             Console.WriteLine();
             }
         }
-        public void MakeIndent()
-        {
-            Console.WriteLine();
-        }
         public void DrawFieldWithShips(Ship[] ships,ref FrontendField field)
         {
             
@@ -191,15 +199,6 @@ namespace ShipWar3
             }
         }
 
-    }
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            var gameCycle = new GameCycle();
-            gameCycle.StartGame();
-
-        }
     }
     class UI
     {
@@ -272,7 +271,7 @@ namespace ShipWar3
 
             GameProcess();
         }
-        private void DrawingFieldLocalFunction()
+        private void DrawingFieldLocalFunction()                                                   //this Method calls drawing methods from drawclass
         {
             Console.Clear();
             drawClassReference.DrawFieldWithShips(playerShips, ref playerField);
@@ -323,6 +322,14 @@ namespace ShipWar3
                     ships[i].state = ShipState.destroyed;
                     field.field[y, x] = '!';
                     uiReference.WriteASentence(ConsoleColor.Cyan, "Hit!");
+                    if (counter == 1)
+                    {
+                        counter = 2;
+                    }
+                    else                                                              //Making counter +1 or -1 to start playerCycle/aiCycle again when hit
+                    {
+                        counter = -1;
+                    }
                     return;
                 }
             }
@@ -338,7 +345,6 @@ namespace ShipWar3
         }
         public  bool isGameEnded(ref bool _isGameEnded)
         {
-
             return _isGameEnded;
         }
         private void CheckForWinner(Ship[] ships,string winner)
@@ -347,7 +353,6 @@ namespace ShipWar3
             {
                 if (ships[i].state == ShipState.alive)
                     return;
-                
             }
             uiReference.WriteASentence(ConsoleColor.Cyan, winner + "became winner");
             isgameEnded = true;
