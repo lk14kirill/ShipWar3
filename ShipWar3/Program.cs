@@ -276,8 +276,8 @@ namespace ShipWar3
         private GameSettings gameSettings = new GameSettings();
         private PlayerType _player1Type;
         private PlayerType _player2Type;
-        private string? _player1Name;
-        private string? _player2Name;
+        private string _player1Name;
+        private string _player2Name;
         public void Start()
         {
             gameSettings.Menu();
