@@ -24,16 +24,20 @@ namespace ShipWar3
     struct Player
     {
         public PlayerType typeOfPlayer;
+        public bool? areShipsHidden;
         public Ship[]? ships;
         public FrontendField? field;
         public string name;
+        public int playerIndex;
         public int wins;
-        public Player(PlayerType typeOfPlayer, Ship[] ships, FrontendField field, string name,  int wins)
+        public Player(int playerIndex,PlayerType typeOfPlayer, Ship[] ships, FrontendField field,bool? areShipsHidden, string name,  int wins)
         {
+            this.playerIndex = playerIndex;
             this.typeOfPlayer = typeOfPlayer;
             this.ships = ships;
             this.field = field;
             this.name = name;
+            this.areShipsHidden = areShipsHidden;
             this.wins = wins;
             if (typeOfPlayer == PlayerType.ai)
             {
@@ -146,7 +150,7 @@ namespace ShipWar3
             }
             return shipsArrayInt;
         }
-        public void DrawField(Ship[] ships, FrontendField field, bool areShipsHidden)
+        public void DrawField(Ship[] ships, FrontendField field, bool? areShipsHidden)
         {
 
             int[] shipStates = TransformShipStatesInArray(ships);
@@ -170,7 +174,7 @@ namespace ShipWar3
                     {
                         symbol = (char)number;
                     }
-                    if (!areShipsHidden)
+                    if ((bool)!areShipsHidden)
                         for (int i = 0; i < ships.Length; i++)
                         {
                             if (shipCoords[i][0] == x && shipCoords[i][1] == y)
@@ -192,7 +196,6 @@ namespace ShipWar3
                 Console.WriteLine();
             }
         }
-
     }
     class UI
     {
@@ -273,7 +276,7 @@ namespace ShipWar3
     class Lobby
     {
         private UI ui = new UI();
-        private GameSettings gameSettings = new GameSettings();
+        private MatchMaker gameSettings = new MatchMaker();
         private PlayerType _player1Type;
         private PlayerType _player2Type;
         private string _player1Name;
@@ -283,13 +286,13 @@ namespace ShipWar3
             gameSettings.Menu();
             Console.Clear();
             BeginSettings();
+
+            gameSettings.PlayGames(3);
         }
         public void BeginSettings()
         {
             ui.TakeInfoAboutPlayers(out _player1Type, out _player2Type, out _player1Name, out _player2Name);   // Takes info about player
             gameSettings.DefinePlayers(_player1Type, _player2Type, _player1Name, _player2Name);                // Setting parameters for players
-
-            gameSettings.PlayGames(3);
         }
     }
     class Game
@@ -319,6 +322,12 @@ namespace ShipWar3
             if (_player2.wins > cachedWinsPlayer2)
                 player2.wins = _player2.wins;
         }
+        public void GeneratePlayerStructures(ref Player player)                   //Generates ships and field
+        {
+            player.ships = shipReference.GenerateShipsWithCoordinates(_shipQuantity);
+            player.field = new FrontendField();
+            player.field.GenerateField();
+        }
         public void Start()
         {
             isgameEnded = false;
@@ -328,16 +337,11 @@ namespace ShipWar3
             uiReference.WriteASentence(ConsoleColor.Cyan, "Warming ships...");
             System.Threading.Thread.Sleep(3000);
 
-            _player1.ships = shipReference.GenerateShipsWithCoordinates(_shipQuantity);
-            _player1.field = new FrontendField();
-            _player1.field.GenerateField();
-
-            _player2.ships = shipReference.GenerateShipsWithCoordinates(_shipQuantity);
-            _player2.field = new FrontendField();
-            _player2.field.GenerateField();
+            GeneratePlayerStructures(ref _player1);
+            GeneratePlayerStructures(ref _player2);
+            ChangeShipShowingStatesForHumans(ref _player1, ref _player2);
 
             DrawFields();
-
             GameProcess();
         }
         private void DrawFields()
@@ -347,12 +351,10 @@ namespace ShipWar3
             Console.WriteLine();
             DrawMethodWithDefiningToShowShipsOrNot(_player2);
         }
-        private void DrawMethodWithDefiningToShowShipsOrNot(Player player)                                                   //Method which defines player type and drawing field depending on type
+        private void DrawMethodWithDefiningToShowShipsOrNot(Player playerToDraw)                                                   //Method which defines player type and drawing field depending on type
         {
-            if (player.typeOfPlayer == PlayerType.ai)
-                drawClassReference.DrawField(player.ships, player.field, true);
-            else
-                drawClassReference.DrawField(player.ships, player.field, false);
+            drawClassReference.DrawField(playerToDraw.ships, playerToDraw.field, playerToDraw.areShipsHidden);
+            Console.WriteLine(playerToDraw.areShipsHidden);
         }
         public void GameProcess()
         {
@@ -378,8 +380,10 @@ namespace ShipWar3
             {
                 uiReference.WriteASentence(ConsoleColor.Cyan, _player1.name + " s turn!");
                 System.Threading.Thread.Sleep(1500);
+
                 (int x, int y) = Attack(_player1.typeOfPlayer);
                 CheckForHit(_player2.ships, _player2.field, x, y);
+                ChangeShipShowingStatesForHumans(ref _player2, ref _player1);
                 DrawFields();
                 CheckForWinner(_player2.ships, ref _player1);
                 counter++;
@@ -389,9 +393,19 @@ namespace ShipWar3
                 uiReference.WriteASentence(ConsoleColor.Cyan, _player2.name + " s turn!");
                 (int x, int y) = Attack(_player2.typeOfPlayer);
                 CheckForHit(_player1.ships, _player1.field, x, y);
+                ChangeShipShowingStatesForHumans(ref _player1, ref _player2);
                 DrawFields();
+                  
                 CheckForWinner(_player1.ships, ref _player2);
                 counter--;
+            }
+        }
+        private void ChangeShipShowingStatesForHumans(ref Player player1,ref Player player2)
+        {
+            if (player1.typeOfPlayer == PlayerType.human && player2.typeOfPlayer == PlayerType.human)
+            {
+                player1.areShipsHidden = false;
+                player2.areShipsHidden = true;
             }
         }
         private void CheckForHit(Ship[] ships, FrontendField field, int x, int y)
@@ -401,7 +415,7 @@ namespace ShipWar3
                 if (ships[i].xCoord == x && ships[i].yCoord == y)
                 {
                     ships[i].state = ShipState.destroyed;
-                    field.field[y, x] = '!';
+                    field.field[y, x] = '#';
                     uiReference.WriteASentence(ConsoleColor.Cyan, "Hit!");
                     if (counter == 1)
                     {
@@ -441,16 +455,40 @@ namespace ShipWar3
             isgameEnded = true;
         }
     }
-    class GameSettings
+    class MatchMaker
     {
         Player player1;
         Player player2;
         int shipQuantity;
         private UI uiReference = new UI();
+        public void DefineShowingOfShips(ref Player player1,ref Player player2)
+        {
+            if (player1.typeOfPlayer == PlayerType.ai && player2.typeOfPlayer == PlayerType.human)
+            {
+                player1.areShipsHidden = true;
+                player2.areShipsHidden = false;
+            }
+            if (player1.typeOfPlayer == PlayerType.human && player2.typeOfPlayer == PlayerType.ai)
+            {
+                player1.areShipsHidden = false;
+                player2.areShipsHidden = true;
+            }
+            if (player1.typeOfPlayer == PlayerType.ai && player2.typeOfPlayer == PlayerType.ai)
+            {
+                player1.areShipsHidden = false;
+                player2.areShipsHidden = false;
+            }
+            if(player1.typeOfPlayer == PlayerType.human && player2.typeOfPlayer == PlayerType.human)
+            {
+                player1.areShipsHidden = false;
+                player2.areShipsHidden = true;
+            }
+        }
         public void DefinePlayers(PlayerType player1Type, PlayerType player2Type, string player1Name, string player2Name)
         {
-            player1 = new Player(player1Type, null, null, player1Name, 0); 
-            player2 = new Player(player2Type, null, null, player2Name, 0);
+            player1 = new Player(0,player1Type, null, null,null, player1Name, 0); 
+            player2 = new Player(1,player2Type, null, null,null, player2Name, 0);
+            DefineShowingOfShips(ref player1, ref player2);
         }
         public void Menu()
         {
