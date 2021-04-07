@@ -5,7 +5,6 @@ namespace ShipWar3
     public class Draw            //Method is doing drawing of this game
     {
         public char symbol;
-
         private int[][] TransformShipCoordInInts(Ship[] shipsArray)
         {
             int[][] intArray = new int[shipsArray.Length][];
