@@ -14,22 +14,22 @@ namespace ShipWar3
         private int cachedWinsPlayer1;
         private int cachedWinsPlayer2;
 
-        private Player _player1;
-        private Player _player2;
-        public Game(Player player1,Player player2,int shipQuantity)
+        private GamePlayer _player1;
+        private GamePlayer _player2;
+        public Game(PlayerProfile player1,PlayerProfile player2,int shipQuantity)
         {
-            _player1 = player1;
-            _player2 = player2;
+            _player1 = new GamePlayer(player1.typeOfPlayer, null,null,player1.areShipsHidden,player1.name,player1.wins); 
+            _player2 = new GamePlayer(player2.typeOfPlayer, null, null, player2.areShipsHidden, player2.name, player2.wins);
             _shipQuantity = shipQuantity;
         }
-        public void CalculateWinner(ref Player player1,ref Player player2)
+        public void CalculateWinner(ref PlayerProfile player1,ref PlayerProfile player2)
         {
             if (_player1.wins > cachedWinsPlayer1)
                 player1.wins = _player1.wins;
             if (_player2.wins > cachedWinsPlayer2)
                 player2.wins = _player2.wins;
         }
-        public void GeneratePlayerStructures(ref Player player)                   //Generates ships and field
+        public void GeneratePlayerStructures(ref GamePlayer player)                   //Generates ships and field
         {
             player.ships = shipReference.GenerateShipsWithCoordinates(_shipQuantity);
             player.field = new FrontendField();
@@ -58,10 +58,9 @@ namespace ShipWar3
             Console.WriteLine();
             DrawMethodWithDefiningToShowShipsOrNot(_player2);
         }
-        private void DrawMethodWithDefiningToShowShipsOrNot(Player playerToDraw)                                                   //Method which defines player type and drawing field depending on type
+        private void DrawMethodWithDefiningToShowShipsOrNot(GamePlayer playerToDraw)                                                   //Method which defines player type and drawing field depending on type
         {
             drawClassReference.DrawField(playerToDraw.ships, playerToDraw.field, playerToDraw.areShipsHidden);
-            Console.WriteLine(playerToDraw.areShipsHidden);
         }
         public void GameProcess()
         {
@@ -107,7 +106,7 @@ namespace ShipWar3
                 counter--;
             }
         }
-        private void ChangeShipShowingStatesForHumans(ref Player player1,ref Player player2)
+        private void ChangeShipShowingStatesForHumans(ref GamePlayer player1,ref GamePlayer player2)
         {
             if (player1.typeOfPlayer == PlayerType.human && player2.typeOfPlayer == PlayerType.human)
             {
@@ -122,7 +121,7 @@ namespace ShipWar3
                 if (ships[i].xCoord == x && ships[i].yCoord == y)
                 {
                     ships[i].state = ShipState.destroyed;
-                    field.field[y, x] = '#';
+                    field.field[y, x] = '×';
                     uiReference.WriteASentence(ConsoleColor.Cyan, "Hit!");
                     if (counter == 1)
                     {
@@ -149,7 +148,7 @@ namespace ShipWar3
         {
             return _isGameEnded;
         }
-        private void CheckForWinner(Ship[] ships, ref Player player)
+        private void CheckForWinner(Ship[] ships, ref GamePlayer player)
         {
             for (int i = 0; i < ships.Length; i++)
             {

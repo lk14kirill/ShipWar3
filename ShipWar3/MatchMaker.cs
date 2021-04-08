@@ -4,28 +4,23 @@ namespace ShipWar3
 {
     class MatchMaker
     {
-        Player player1;
-        Player player2;
+        PlayerProfile player1;
+        PlayerProfile player2;
         int shipQuantity;
         private UI uiReference = new UI();
-        public void DefineShowingOfShips(ref Player player1,ref Player player2)
+        public void DefineShowingOfShips(ref PlayerProfile player1,ref PlayerProfile player2)
         {
             if (player1.typeOfPlayer == PlayerType.ai && player2.typeOfPlayer == PlayerType.human)
             {
                 player1.areShipsHidden = true;
                 player2.areShipsHidden = false;
             }
-            if (player1.typeOfPlayer == PlayerType.human && player2.typeOfPlayer == PlayerType.ai)
-            {
-                player1.areShipsHidden = false;
-                player2.areShipsHidden = true;
-            }
             if (player1.typeOfPlayer == PlayerType.ai && player2.typeOfPlayer == PlayerType.ai)
             {
                 player1.areShipsHidden = false;
                 player2.areShipsHidden = false;
             }
-            if(player1.typeOfPlayer == PlayerType.human && player2.typeOfPlayer == PlayerType.human)
+           else
             {
                 player1.areShipsHidden = false;
                 player2.areShipsHidden = true;
@@ -33,8 +28,8 @@ namespace ShipWar3
         }
         public void DefinePlayers(PlayerType player1Type, PlayerType player2Type, string player1Name, string player2Name)
         {
-            player1 = new Player(0,player1Type, null, null,null, player1Name, 0); 
-            player2 = new Player(1,player2Type, null, null,null, player2Name, 0);
+            player1 = new PlayerProfile(player1Name, player1Type,null, 0);
+            player2 = new PlayerProfile(player2Name, player2Type,null, 0);
             DefineShowingOfShips(ref player1, ref player2);
         }
         public void Menu()
