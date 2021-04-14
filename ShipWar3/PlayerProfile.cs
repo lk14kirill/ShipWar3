@@ -12,6 +12,10 @@
             this.typeOfPlayer = typeOfPlayer;
             this.areShipsHidden = areShipsHidden;
             this.wins = wins;
+            if (typeOfPlayer == PlayerType.ai)
+            {
+                this.name = "Bot";
+            }
         }
     }
 }
