@@ -1,27 +1,38 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace ShipWar3
 {
     class Lobby
     {
         private UI ui = new UI();
-        private MatchMaker gameSettings = new MatchMaker();
-        private PlayerType _player1Type;
-        private PlayerType _player2Type;
-        private string _player1Name;
-        private string _player2Name;
+        private XML xml = new XML();
+        private MatchMaker matchMaker = new MatchMaker();
+        public List<PlayerProfile> playerProfiles = new List<PlayerProfile>();
+        private PlayerProfile player1;
+        private PlayerProfile player2;
         public void Start()
         {
-            gameSettings.Menu();
-            Console.Clear();
-            BeginSettings();
+            xml.Load(ref playerProfiles);
+            ui.GameSettings();
+            player1 = ui.LogInOrRegisterAccount(playerProfiles);
+            player2 = ui.LogInOrRegisterAccount(playerProfiles);
+            xml.Save(playerProfiles);
 
-            gameSettings.PlayGames(3);
+            Console.Clear();
+            
+            matchMaker.DefinePlayers(player1.typeOfPlayer, player2.typeOfPlayer, player1.name, player2.name) ;                // Setting parameters for players
+            matchMaker.PlayGames(3);
+
+            (int wins, int wins2) = matchMaker.GetResults();
+            FindAndChangeWinsOfPlayerProfilesList(player1.login, wins);
+            FindAndChangeWinsOfPlayerProfilesList(player2.login, wins2);
+            xml.Save(playerProfiles);
         }
-        public void BeginSettings()
+        private void FindAndChangeWinsOfPlayerProfilesList(string login,int wins)
         {
-            ui.TakeInfoAboutPlayers(out _player1Type, out _player2Type, out _player1Name, out _player2Name);   // Takes info about player
-            gameSettings.DefinePlayers(_player1Type, _player2Type, _player1Name, _player2Name);                // Setting parameters for players
+
+             playerProfiles.FindAll(profile => profile.login == login).ForEach(profileComponent => profileComponent.wins += wins);
         }
     }
 }

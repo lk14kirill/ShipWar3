@@ -2,7 +2,7 @@
 {
     class GamePlayer
     {
-        public Ship shipReference = new Ship();
+        public Ship shipReference;
         public PlayerType typeOfPlayer;
         public bool? areShipsHidden;
         public Ship[]? ships;
@@ -19,6 +19,7 @@
             this.areShipsHidden = areShipsHidden;
             this.wins = wins;
             this.shipQuantity = shipQuantity;
+            shipReference = new Ship();
         }
         public void GeneratePlayerStructures()                   //Generates ships and field
         {
