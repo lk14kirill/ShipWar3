@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace ShipWar3
 {
@@ -8,31 +7,32 @@ namespace ShipWar3
         private UI ui = new UI();
         private XML xml = new XML();
         private MatchMaker matchMaker = new MatchMaker();
-        public List<PlayerProfile> playerProfiles = new List<PlayerProfile>();
+        private PlayerProfileList profiles = new PlayerProfileList();
         private PlayerProfile player1;
         private PlayerProfile player2;
+        private bool continueGame= false;
         public void Start()
         {
-            xml.Load(ref playerProfiles);
-            ui.GameSettings();
-            player1 = ui.LogInOrRegisterAccount(playerProfiles);
-            player2 = ui.LogInOrRegisterAccount(playerProfiles);
-            xml.Save(playerProfiles);
+            do
+            {
+                profiles.Load();
+                ui.GameSettings();
+                player1 = ui.LogInOrRegisterAccount(profiles);
+                player2 = ui.LogInOrRegisterAccount(profiles);
+                profiles.Save();
 
-            Console.Clear();
-            
-            matchMaker.DefinePlayers(player1.typeOfPlayer, player2.typeOfPlayer, player1.name, player2.name) ;                // Setting parameters for players
-            matchMaker.PlayGames(3);
+                Console.Clear();
 
-            (int wins, int wins2) = matchMaker.GetResults();
-            FindAndChangeWinsOfPlayerProfilesList(player1.login, wins);
-            FindAndChangeWinsOfPlayerProfilesList(player2.login, wins2);
-            xml.Save(playerProfiles);
+                matchMaker.DefinePlayers(player1.typeOfPlayer, player2.typeOfPlayer, player1.name, player2.name);                // Setting parameters for players
+                matchMaker.PlayGames(1);
+
+                (int firstPlayerWins, int secondPlayerWins) = matchMaker.GetResults();
+                profiles.ChangeWinsOfProfile(player1.login, firstPlayerWins);
+                profiles.ChangeWinsOfProfile(player2.login, secondPlayerWins);
+                profiles.Save();
+            } while (continueGame);
+
         }
-        private void FindAndChangeWinsOfPlayerProfilesList(string login,int wins)
-        {
-
-             playerProfiles.FindAll(profile => profile.login == login).ForEach(profileComponent => profileComponent.wins += wins);
-        }
+       
     }
 }

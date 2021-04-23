@@ -5,14 +5,30 @@ namespace ShipWar3
 {
     class UI
     {
+        //private PlayerProfileList profilesRef = new PlayerProfileList();
         public void ShowInfo(PlayerProfile profile)
         {
-            Console.WriteLine("Name:"+profile.name);
-            Console.WriteLine("Login:"+profile.login);
-            Console.WriteLine("Wins:" + profile.wins);
+            WriteASentence(ConsoleColor.Cyan, "---------Information---------");
+            WriteASentence(ConsoleColor.Cyan, "Name:" + profile.name);
+            WriteASentence(ConsoleColor.Cyan, "Login:" + profile.login);
+            WriteASentence(ConsoleColor.Cyan, "Wins:" + profile.wins);
+            WriteASentence(ConsoleColor.Cyan, "------------------");
             System.Threading.Thread.Sleep(3000);
         }
-        public PlayerProfile LogInOrRegisterAccount(List<PlayerProfile> playerProfiles)
+        public bool AskForNewGame()
+        {
+            string input;
+            WriteASentence(ConsoleColor.Cyan, "------------------");
+            WriteASentence(ConsoleColor.Cyan, "Wanna play more?Yes or no");
+            do
+            {
+                WriteASentence(ConsoleColor.Cyan, "Please write 'yes' or 'no' ");
+                input = Console.ReadLine();
+            }
+            while (input != "bot" && input != "human");
+            return input == "bot" ? true : false;
+        }
+        public PlayerProfile LogInOrRegisterAccount(PlayerProfileList profiles)
         {
             Console.Clear();
             PlayerProfile profile;
@@ -20,12 +36,11 @@ namespace ShipWar3
             {          
                 if (!IsThereAccount())
                 {
-                    TakeInfoAboutPlayer(out string name, out string login, out string password);
-                    profile = CreateProfile(playerProfiles,name, login, password);
+                    profile = Registrate(profiles);
                 }
                 else
                 {
-                    profile = (PlayerProfile)LogIn(playerProfiles);
+                    profile = LogIn(profiles).Value;
                 }
                 ShowInfo(profile);
             }
@@ -35,15 +50,14 @@ namespace ShipWar3
             }
             return profile;
         }
-        public PlayerProfile CreateProfile(List<PlayerProfile>playerProfiles,string name, string login, string password)
+        public PlayerProfile Registrate(PlayerProfileList profiles)
         {
-            PlayerProfile profile = new PlayerProfile(name, PlayerType.human, null, 0, login, password);
-            playerProfiles.Add(profile);
-            return profile;
+            TakeInfoAboutPlayer(out string name, out string login, out string password, profiles);
+           return profiles.Create(name, login, password);
         }
-
         public bool IsBot()
         {
+            WriteASentence(ConsoleColor.Cyan, "---------Choosing player---------");
             string input;
             WriteASentence(ConsoleColor.Cyan, "Are you bot,or human?");
             do
@@ -56,6 +70,7 @@ namespace ShipWar3
         }
         public void GameSettings()
         {
+            WriteASentence(ConsoleColor.Cyan, "------------------");
             WriteASentence(ConsoleColor.Cyan, "Welcome to ships war!");
             WriteASentence(ConsoleColor.Cyan, "You can play agains our bot.Here some instructions:");
             WriteASentence(ConsoleColor.Cyan, "^ - means you missed");
@@ -64,6 +79,7 @@ namespace ShipWar3
             WriteASentence(ConsoleColor.Cyan, "First,who destroyed all of ships - wins!");
             Console.WriteLine();
             WriteASentence(ConsoleColor.Cyan, "Type 'start' to start the game");
+            WriteASentence(ConsoleColor.Cyan, "------------------");
             Console.ReadLine();
         }
         public void WriteASentence(ConsoleColor color, string text)
@@ -88,7 +104,7 @@ namespace ShipWar3
         {
             WriteASentence(ConsoleColor.Cyan, "Thanks for playing");
         }
-        public PlayerProfile? LogIn(List<PlayerProfile> profiles)
+        public PlayerProfile? LogIn(PlayerProfileList profiles)
         {
             string login;
             string password;
@@ -100,17 +116,24 @@ namespace ShipWar3
             {
                 WriteASentence(ConsoleColor.Cyan, "Please write login");
                 login = Console.ReadLine();
-                if (login == "return")
+                if (login == "Registrate")
+                {
+                    profile = Registrate(profiles);
                     break;
+                }
                 WriteASentence(ConsoleColor.Cyan, "Please write password");
                 password = Console.ReadLine();
-                if (password == "return")
+                if (password == "Registrate")
+                {
+                    profile = Registrate(profiles);
                     break;
-                
-                profile = CheckForString(profiles, login, password);
+                }
+
+                    profile = profiles.CheckProfileOnExistance(login, password);
                 if (profile == null)
                 {
                     accountExists = false;
+                    WriteASentence(ConsoleColor.Cyan, "Wrong login or password.If you havent registrated,write 'Registrate' ");
                 }
                 else
                     accountExists = true;
@@ -118,20 +141,10 @@ namespace ShipWar3
             while (!accountExists);
             return profile;
         }
-        public PlayerProfile? CheckForString(List<PlayerProfile> profiles,string login,string password)
-        {
-            foreach(PlayerProfile profile in profiles)
-            {
-                if(profile.login == login && profile.password == password)
-                {
-                    return profile;
-                }
-            }
-            return null;
-        }
         public bool IsThereAccount()
         {
-            string input;
+            WriteASentence(ConsoleColor.Cyan, "---------Account---------");
+                string input;
             WriteASentence(ConsoleColor.Cyan, "Do you have account?");
             do
             {
@@ -141,12 +154,18 @@ namespace ShipWar3
             while (input != "yes" && input != "no");
             return input == "yes" ? true : false; 
         }
-        public void TakeInfoAboutPlayer(out string? player1Name, out string login, out string password)
+        public void TakeInfoAboutPlayer(out string? player1Name, out string login, out string password,PlayerProfileList profiles)
         {
+            WriteASentence(ConsoleColor.Cyan, "---------Registration---------");
             WriteASentence(ConsoleColor.Cyan, "Write your name");
             player1Name = Console.ReadLine();
             WriteASentence(ConsoleColor.Cyan, "Write your login");
             login = Console.ReadLine();
+            while (!profiles.IsLoginFree(login))
+            {
+                WriteASentence(ConsoleColor.Cyan, "This login is already taken.Try another one");
+                login = Console.ReadLine();
+            }
             WriteASentence(ConsoleColor.Cyan, "Write your password");
             password = Console.ReadLine();
 

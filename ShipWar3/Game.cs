@@ -34,7 +34,7 @@ namespace ShipWar3
 
             _player1.GeneratePlayerStructures();
             _player2.GeneratePlayerStructures();
-            ChangeShipShowingStatesForHumans( _player1,  _player2);
+              ChangeShipShowingStatesForHumans( _player1,  _player2);
 
             DrawFields();
             GameProcess();
