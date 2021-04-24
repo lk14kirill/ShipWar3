@@ -25,8 +25,9 @@ namespace ShipWar3
                 WriteASentence(ConsoleColor.Cyan, "Please write 'yes' or 'no' ");
                 input = Console.ReadLine();
             }
-            while (input != "bot" && input != "human");
-            return input == "bot" ? true : false;
+            while (input != "yes" && input != "no");
+            Console.Clear();
+            return input == "yes" ? true : false;
         }
         public PlayerProfile LogInOrRegisterAccount(PlayerProfileList profiles)
         {

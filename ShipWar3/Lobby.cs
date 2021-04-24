@@ -5,12 +5,10 @@ namespace ShipWar3
     class Lobby
     {
         private UI ui = new UI();
-        private XML xml = new XML();
         private MatchMaker matchMaker = new MatchMaker();
         private PlayerProfileList profiles = new PlayerProfileList();
         private PlayerProfile player1;
         private PlayerProfile player2;
-        private bool continueGame= false;
         public void Start()
         {
             do
@@ -30,7 +28,7 @@ namespace ShipWar3
                 profiles.ChangeWinsOfProfile(player1.login, firstPlayerWins);
                 profiles.ChangeWinsOfProfile(player2.login, secondPlayerWins);
                 profiles.Save();
-            } while (continueGame);
+            } while (ui.AskForNewGame());
 
         }
        
